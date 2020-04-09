@@ -12,6 +12,21 @@
 
 ![image](https://github.com/sszxc/TurtyTalk/blob/master/2020-04-09_17-03.png)
 
+# 3rd party
+安装requests模块
+```
+sudo pip install requests
+```
+
+安装两个Python库pyaudio和python-vlc
+```
+sudo apt-get install python-pip portaudio19-dev vlc libvlc-dev
+sudo pip install pyaudio
+sudo pip install python-vlc
+```
+
+
+
 # Demo
 使用`./quick-demo.sh`快速启动Demo，使用`rostopic pub /Talk_Msg std_msgs/String 'start'`手动启动对话。
 
