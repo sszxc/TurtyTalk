@@ -2,4 +2,4 @@ build/
 build_oldversion/
 devel/
 devel_oldversion/
-src/.vscode/settings.json
+src/.vscode/
