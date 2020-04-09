@@ -92,10 +92,25 @@ class baidu_unit_talk_main():
         if (s1[u"result"]['response'][u"action_list"][0][u"say"]):
             self.words = s1[u"result"]['response'][u"action_list"][0][u"say"]
             self.say.publish(self.words)
-            rospy.loginfo("收到消息：" + self.words)
+            rospy.loginfo("回复消息：" + self.words)        
+        if (len(s1['result']['response']['schema']['slots']) == 2):  # 意图明确
+            slots = s1['result']['response']['schema']['slots']
+            ResultInfo = slots[0]['normalized_word'] + \
+                " " + slots[1]['normalized_word']
+
+            rospy.loginfo("获取意图：" + ResultInfo)
+
+            self.sendResultInfo.publish(ResultInfo)  # 沟通结果发布
+            self.LastWord.publish("stop")  # TTS最后一句
+            self.session_id = ''
 
     def define(self):
         self.say = rospy.Publisher('speak_string', String, queue_size=1)
+        self.sendResultInfo = rospy.Publisher(
+            'Listen_Msg', String, queue_size=1)  # 沟通结果发布
+        self.LastWord = rospy.Publisher(
+            'TTS_LastWord', String, queue_size=1)  # TTS最后一句
+
         if not rospy.has_param('~baidu_unit_scene_id'):
             rospy.set_param('~baidu_unit_scene_id', '19273548')  # 加了一个ID
         if not rospy.has_param('~baidu_unit_token_topic'):
@@ -103,13 +118,17 @@ class baidu_unit_talk_main():
                             'baidu_unit_token_string')
         if not rospy.has_param('~baidu_unit_listen_topic'):
             rospy.set_param('~baidu_unit_listen_topic',
-                            'baidu_unit_listen_string')
+                            'UNIT_Listen')
+        # if not rospy.has_param('~baidu_unit_listen_topic'):
+        #     rospy.set_param('~baidu_unit_listen_topic',
+        #                     'baidu_unit_listen_string')
 
         self.token_topic = rospy.get_param('~baidu_unit_token_topic')
         self.listen_topic = rospy.get_param('~baidu_unit_listen_topic')
         self.scene_id = rospy.get_param('~baidu_unit_scene_id')
         self.access_token = ''
         self.session_id = ''
+
 
     def set_token(self, data):
         print(data)
@@ -128,7 +147,8 @@ if __name__ == "__main__":
     try:
         signal.signal(signal.SIGINT, quit)
         signal.signal(signal.SIGTERM, quit)
-        rospy.init_node('baidu_unit_talk')
+        # rospy.init_node('baidu_unit_talk')
+        rospy.init_node('Baidu_UNIT')
         rospy.loginfo("initialization  baidu_unit talking")
         baidu_unit_talk_main()
         rospy.loginfo("process done and quit")
