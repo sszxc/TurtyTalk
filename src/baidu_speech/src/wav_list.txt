@@ -1,0 +1,3 @@
+/home/henry/TurtyTalk_ws/src/baidu_speech/src/turty.wav
+/home/henry/TurtyTalk_ws/src/baidu_speech/src/water bottle.wav
+/home/henry/TurtyTalk_ws/src/baidu_speech/src/orange.wav

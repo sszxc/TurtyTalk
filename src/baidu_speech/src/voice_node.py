@@ -26,25 +26,52 @@ class recoder():
         reg = rospy.Publisher(
             'UNIT_Listen', String, queue_size=1)  # 识别结果发布
 
+        # 手动输入音频序列
+        self.wavelist_file = "/home/henry/TurtyTalk_ws/src/baidu_speech/src/wav_list.txt"
+
+        wave_file = []
+        index = 100 # 改成0可以从文件中读取
+
+        f = open(self.wavelist_file)
+        line = f.readline()
+        while line:
+            # print line.rstrip('\n')
+            wave_file.append(line.rstrip('\n'))
+            line = f.readline()
+        f.close()
+
+        # print(wave_file[0])
+        # print(len(wave_file))
+       
+        rospy.Subscriber('Talk_Msg', String, self.decodeMain, queue_size=1)
+        
         while not rospy.is_shutdown():  # and if_continue != '':
             if self.if_continue == 'start' or self.if_continue == 'y':
+                self.if_continue = ''  # 等待下一次
+
                 self.define()
-                self.recode()
-                words = self.reg()
+                if len(wave_file) - index > 0:
+                    print("read from file!")
+                    self.read_from_file(wave_file[index])
+                    words = self.reg(1)
+                    index += 1
+                else:
+                    self.recode()
+                    words = self.reg(0)
+
 
                 reg.publish(words)
-
-                self.if_continue = ''  # 等待下一次
 
             # self.savewav("testing")#testing
             else:
                 # self.if_continue = raw_input('pls input y to continue')  #y下一句
-                rospy.Subscriber('Talk_Msg', String, self.decodeMain, queue_size=1)
+                i = 1
+                
 
     def decodeMain(self, data):
         self.if_continue = data.data
 
-    def reg(self):
+    def reg(self,mode):
 
         # get token
         requestData = {"grant_type":           self.Grant_type,
@@ -63,13 +90,15 @@ class recoder():
         else:
             rospy.loginfo('token failed\n')
 
-        # self.print_data_len(self.Voice_String)
-
-        str_voice = self.conventor(self.Voice_String)
-
-        speech = base64.b64encode(str_voice)
-
-        size = len(str_voice)
+        size = 0
+        if mode==1:
+            speech = base64.b64encode(self.Voice_String)
+            size = len(self.Voice_String)
+        else:
+            # self.print_data_len(self.Voice_String)
+            str_voice = self.conventor(self.Voice_String)
+            speech = base64.b64encode(str_voice)
+            size = len(str_voice)
 
         RegData = {"format":       self.FORMAT,
                    "rate":         self.SAMPLING_RATE,
@@ -269,7 +298,7 @@ class recoder():
         self.nchannel = rospy.get_param('~REG_nchannel')  # default 1
         # print 'self.nchannel',self.nchannel,type(self.nchannel)
 
-        self.Voice_String = []
+
 
     # testing
         # print 'NUM_SAMPLES',type(self.nchannel)
@@ -277,6 +306,10 @@ class recoder():
     def Print_Response(self, data):
         for i in data:
             print ' ', i, ': ', data[i]
+
+    def read_from_file(self, filename):
+        with open(filename, 'rb') as speech_file:
+            self.Voice_String = speech_file.read()
 
     def recode(self):
         pa = PyAudio()
