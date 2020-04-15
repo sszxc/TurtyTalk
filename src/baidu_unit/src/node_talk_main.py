@@ -105,12 +105,14 @@ class baidu_unit_talk_main():
             if (len(s1['result']['response']['schema']['slots']) == 2):  # 意图明确
                 slots = s1['result']['response']['schema']['slots']
                 ResultInfo = slots[0]['normalized_word'] + \
-                    "想要" + slots[1]['normalized_word'] + "。明白了，马上就去拿。"
-
+                    " " + slots[1]['normalized_word']
                 rospy.loginfo("获取意图：" + ResultInfo)
 
                 self.sendResultInfo.publish(ResultInfo)  # 沟通结果发布
-                self.say.publish(ResultInfo)
+                ResultSpeak = slots[0]['normalized_word'] + \
+                    "想要" + slots[1]['normalized_word'] + "。明白了，马上就去拿。"
+                rospy.loginfo("回复消息：" + ResultSpeak)
+                self.say.publish(ResultSpeak)
                 self.LastWord.publish("stop")  # TTS最后一句
                 self.session_id = ''
             else:                                                          # 意图还不明确
