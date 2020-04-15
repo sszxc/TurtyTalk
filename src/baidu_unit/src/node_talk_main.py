@@ -38,9 +38,16 @@ class baidu_unit_talk_main():
         # listen topic
         rospy.Subscriber(self.listen_topic, String, self.get_say)
         rospy.loginfo("wait for user")
+
+        rospy.Subscriber('Talk_Msg', String, self.decodeStart, queue_size=1)
+
         
         # self.load("今天北京天气怎么样？")
         rospy.spin()
+
+    def decodeStart(self, data):
+        if data.data == 'start':
+            rospy.loginfo("正在录音...")
 
     def get_say(self, data):
         self.load(data.data)
@@ -92,7 +99,8 @@ class baidu_unit_talk_main():
         if (s1[u"result"]['response'][u"action_list"][0][u"say"]):
             self.words = s1[u"result"]['response'][u"action_list"][0][u"say"]
             self.say.publish(self.words)
-            rospy.loginfo("回复消息：" + self.words)        
+            rospy.loginfo("回复消息：" + self.words)
+              
         if (len(s1['result']['response']['schema']['slots']) == 2):  # 意图明确
             slots = s1['result']['response']['schema']['slots']
             ResultInfo = slots[0]['normalized_word'] + \

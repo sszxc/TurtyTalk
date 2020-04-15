@@ -187,7 +187,7 @@ class recoder():
         if rospy.has_param('~REG_NO_WORDS'):
             pass
         else:
-            rospy.set_param('~REG_NO_WORDS', 6)
+            rospy.set_param('~REG_NO_WORDS', 15) # 6
 
         if rospy.has_param('~REG_Api_Key'):
             pass
