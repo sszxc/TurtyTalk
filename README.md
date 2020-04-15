@@ -32,7 +32,7 @@ Object_dict = {'水杯': 'cup', '餐巾纸': 'napkin', '肥皂': 'soap', '薯片
 ```
 
 # Demo
-使用`./quick-demo.sh`快速启动Demo，使用`rostopic pub /Talk_Msg std_msgs/String 'start'`手动启动对话。
+使用`./quick-demo.sh`快速启动Demo，使用`rostopic pub /Talk_Msg std_msgs/String 'start'`手动启动对话。  
 向`/speak_string`话题发送String单独调用TTS引擎，用于返回后汇报，例如使用`rostopic pub /speak_string std_msgs/String '这是你要的东西'`。
 以下为三轮典型对话，分别是正常获取意图、重复澄清、整句获取。
 
