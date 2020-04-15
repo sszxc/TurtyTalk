@@ -40,14 +40,18 @@ class baidu_unit_talk_main():
         rospy.loginfo("wait for user")
 
         rospy.Subscriber('Talk_Msg', String, self.decodeStart, queue_size=1)
+        rospy.Subscriber('Talk_Msg', String, self.decodeListen, queue_size=1)
 
-        
         # self.load("今天北京天气怎么样？")
         rospy.spin()
 
+    def decodeListen(self, data):
+        if data.data == 'listen':
+            rospy.loginfo("正在录音...")
+
     def decodeStart(self, data):
         if data.data == 'start':
-            rospy.loginfo("正在录音...")
+            rospy.loginfo("发送消息：请问有什么可以帮你？")
 
     def get_say(self, data):
         self.load(data.data)
@@ -96,21 +100,23 @@ class baidu_unit_talk_main():
             json_bot_session = json.loads(json_str).encode('utf-8')
             json_bot_session = json.loads(json_bot_session)
             self.session_id = json_bot_session[u"session_id"]
-        if (s1[u"result"]['response'][u"action_list"][0][u"say"]):
-            self.words = s1[u"result"]['response'][u"action_list"][0][u"say"]
-            self.say.publish(self.words)
-            rospy.loginfo("回复消息：" + self.words)
-              
-        if (len(s1['result']['response']['schema']['slots']) == 2):  # 意图明确
-            slots = s1['result']['response']['schema']['slots']
-            ResultInfo = slots[0]['normalized_word'] + \
-                " " + slots[1]['normalized_word']
 
-            rospy.loginfo("获取意图：" + ResultInfo)
+        if (s1[u"result"]['response'][u"action_list"][0][u"say"]): # 回复              
+            if (len(s1['result']['response']['schema']['slots']) == 2):  # 意图明确
+                slots = s1['result']['response']['schema']['slots']
+                ResultInfo = slots[0]['normalized_word'] + \
+                    "想要" + slots[1]['normalized_word'] + "。明白了，马上就去拿。"
 
-            self.sendResultInfo.publish(ResultInfo)  # 沟通结果发布
-            self.LastWord.publish("stop")  # TTS最后一句
-            self.session_id = ''
+                rospy.loginfo("获取意图：" + ResultInfo)
+
+                self.sendResultInfo.publish(ResultInfo)  # 沟通结果发布
+                self.say.publish(ResultInfo)
+                self.LastWord.publish("stop")  # TTS最后一句
+                self.session_id = ''
+            else:                                                          # 意图还不明确
+                self.words = s1[u"result"]['response'][u"action_list"][0][u"say"]
+                self.say.publish(self.words)
+                rospy.loginfo("回复消息：" + self.words)
 
     def define(self):
         self.say = rospy.Publisher('speak_string', String, queue_size=1)

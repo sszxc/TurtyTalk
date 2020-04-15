@@ -26,11 +26,18 @@ class speeker():
         self.is_last = 0
         # rospy.Subscriber('speak_string', String, self.SpeedCB, queue_size=1)
         # rospy.Subscriber('/voice/tts', String, self.SpeedCB, queue_size=1)
+        rospy.Subscriber('Talk_Msg', String, self.decodeStart, queue_size=1)
+
         rospy.Subscriber('speak_string', String, self.SpeedCB, queue_size=1)
         
         rospy.Timer(rospy.Duration(self.ResponseSensitivity), self.TimerCB)
 
         rospy.spin()
+
+    def decodeStart(self, data):
+        if data.data == 'start':
+            self.start.publish("请问有什么可以帮你？")
+            
 
     def TimerCB(self, event):
         with self.locker:
@@ -252,6 +259,8 @@ class speeker():
         #self.pub = rospy.Publisher('speak_status', String, queue_size=10)
         self.reqSTT = rospy.Publisher('Talk_Msg', String, queue_size=1)
 
+        self.start = rospy.Publisher('speak_string', String, queue_size=1)
+
     def Print_Response(self, data):
         for i in data:
             print '\t', i, ': ', data[i]
@@ -309,7 +318,7 @@ class speeker():
 
         rospy.Subscriber('TTS_LastWord', String, self.LastWord, queue_size=1)
         if self.is_last == 0:
-          self.reqSTT.publish('start')  # 请求STT下一次
+          self.reqSTT.publish('listen')  # 请求STT下一次
         else:
           self.is_last = 0
 

@@ -46,13 +46,14 @@ class recoder():
         rospy.Subscriber('Talk_Msg', String, self.decodeMain, queue_size=1)
         
         while not rospy.is_shutdown():  # and if_continue != '':
-            if self.if_continue == 'start' or self.if_continue == 'y':
+            if self.if_continue == 'listen' or self.if_continue == 'y':
                 self.if_continue = ''  # 等待下一次
 
                 self.define()
                 if len(wave_file) - index > 0:
                     print("read from file!")
-                    self.read_from_file(wave_file[index])
+                    self.currentFile = wave_file[index]
+                    # self.read_from_file(wave_file[index])
                     words = self.reg(1)
                     index += 1
                 else:
@@ -91,9 +92,12 @@ class recoder():
             rospy.loginfo('token failed\n')
 
         size = 0
-        if mode==1:
-            speech = base64.b64encode(self.Voice_String)
-            size = len(self.Voice_String)
+        if mode == 1:
+            
+            with open(self.currentFile, 'rb') as speech_file:
+                speech_data = speech_file.read()
+            size = len(speech_data)
+            speech = base64.b64encode(speech_data)
         else:
             # self.print_data_len(self.Voice_String)
             str_voice = self.conventor(self.Voice_String)
@@ -298,6 +302,8 @@ class recoder():
         self.nchannel = rospy.get_param('~REG_nchannel')  # default 1
         # print 'self.nchannel',self.nchannel,type(self.nchannel)
 
+        self.currentFile = ''
+
 
 
     # testing
@@ -306,10 +312,6 @@ class recoder():
     def Print_Response(self, data):
         for i in data:
             print ' ', i, ': ', data[i]
-
-    def read_from_file(self, filename):
-        with open(filename, 'rb') as speech_file:
-            self.Voice_String = speech_file.read()
 
     def recode(self):
         pa = PyAudio()
